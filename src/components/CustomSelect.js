@@ -1,6 +1,6 @@
 import React from 'react';
 
-function SelectMarcas(props) {
+function CustomSelect(props) {
 
 	return (
 		<div className="form-element">
@@ -11,8 +11,8 @@ function SelectMarcas(props) {
 				className="selects" 
 			>
 				<option disabled value="-1">Selecione uma Marca</option>
-				{props.marcas.map((marca)=> {
-					return <option value={marca.id} key={marca.key}>{marca.name}</option>
+				{props.lista.map((elemento)=> {
+					return <option value={elemento.id} key={elemento.key}>{elemento.name}</option>
 				})
 				}
 			</select>
@@ -20,4 +20,4 @@ function SelectMarcas(props) {
 	);
 }
 
-export default SelectMarcas;
+export default CustomSelect;

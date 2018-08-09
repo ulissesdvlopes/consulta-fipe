@@ -22,21 +22,16 @@ class ModeloInfo extends Component {
 					} else {
 						msg = "Não foi possível estabelecer a conexão, tente novamente";
 					}
+					this.props.resetLoading(msg);
 				});
-				this.props.resetLoading(msg);
+				
     }
         
         if(this.props.veiculo !== prevProps.veiculo || this.props.marca !== prevProps.marca) {
             this.setState({dados: {}});
         }
             
-	}
-	
-	handler = (event) => {
-        this.setState({value: event.target.value});
-        this.props.handler(event);
-    }
-    
+	}    
 
   render() {
     return (
