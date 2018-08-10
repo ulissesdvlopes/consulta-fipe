@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import './App.css';
 import loadingIcon from './spinner.svg';
-import SelectMarcas from './components/SelectMarcas';
-import SelectVeiculo from './components/SelectVeiculo';
 import SelectAno from './components/SelectAno';
 import ModeloInfo from './components/ModeloInfo';
-import {getMarcas, getModelos, getAnos} from './FipeApi';
+import FipeApi from './FipeApi';
+import CustomSelect from './components/CustomSelect';
 
 
 class App extends Component {
@@ -26,7 +25,7 @@ class App extends Component {
 
   componentDidMount() {
 		
-		getMarcas(data => {
+		FipeApi.getMarcas(data => {
 			this.setState({marcas: data});
 		});
 
@@ -39,7 +38,7 @@ class App extends Component {
   handleMarcaChange = (event) => {
     this.setState({marcaAtual: event.target.value, veiculoAtual: -1, anoAtual: -1, loading: true});
 
-    getModelos((data, msg)=> {
+    FipeApi.getModelos((data, msg)=> {
       this.setState({modelos: data, loading: false, msg: msg});
     }, event.target.value);
     console.log("marca: " + event.target.value);
@@ -49,7 +48,7 @@ class App extends Component {
   handleVeiculoChange = (event) => {
     this.setState({veiculoAtual: event.target.value, anoAtual: -1, loading: true});
 
-    getAnos(data => {
+    FipeApi.getAnos(data => {
       this.setState({anos: data, loading: false});
     }, this.state.marcaAtual, event.target.value);
 
@@ -72,14 +71,14 @@ class App extends Component {
         <form className="forms" onChange={this.handleChange}>
           {this.state.msg}
           {loading}
-          <SelectMarcas  
+          <CustomSelect  
             handler={this.handleMarcaChange} 
             value={this.state.marcaAtual}
-            marcas={this.state.marcas}
+            lista={this.state.marcas}
           />
-          <SelectVeiculo 
+          <CustomSelect 
             handler={this.handleVeiculoChange} 
-            veiculos={this.state.modelos} 
+            lista={this.state.modelos} 
             value={this.state.veiculoAtual} 
           />
           <SelectAno 
