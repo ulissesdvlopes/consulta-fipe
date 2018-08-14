@@ -5,7 +5,11 @@ import SelectAno from './components/SelectAno';
 import ModeloInfo from './components/ModeloInfo';
 import FipeApi from './FipeApi';
 import CustomSelect from './components/CustomSelect';
+import { reducer } from './reducers/reducers';
+import { createStore } from 'redux';
 
+const store = createStore(reducer);
+console.log(store)
 
 class App extends Component {
 
