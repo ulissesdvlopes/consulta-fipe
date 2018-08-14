@@ -19,45 +19,44 @@ class App extends Component {
       msg: '',
       marcas: [],
       modelos: [],
-      anos: []
+      anos: [],
+      modeloFinal: {}
     };
   }
 
   componentDidMount() {
 		
-		FipeApi.getMarcas(data => {
-			this.setState({marcas: data});
+		FipeApi.getMarcas((data, err)=> {
+      let msg = '';
+      if(err)
+        msg = "Falha na conexão";
+			this.setState({marcas: data, msg: msg});
 		});
 
 	}
 
-  resetLoading = (msg) => {
-    this.setState({loading: false, msg: msg});
-  }
-
   handleMarcaChange = (event) => {
-    this.setState({marcaAtual: event.target.value, veiculoAtual: -1, anoAtual: -1, loading: true});
+    this.setState({marcaAtual: event.target.value, veiculoAtual: -1, anoAtual: -1, modeloFinal: {}, loading: true});
 
-    FipeApi.getModelos((data, msg)=> {
+    FipeApi.getVeiculos((data, msg)=> {
       this.setState({modelos: data, loading: false, msg: msg});
     }, event.target.value);
-    console.log("marca: " + event.target.value);
-    
   }
 
   handleVeiculoChange = (event) => {
-    this.setState({veiculoAtual: event.target.value, anoAtual: -1, loading: true});
+    this.setState({veiculoAtual: event.target.value, anoAtual: -1, modeloFinal: {}, loading: true});
 
     FipeApi.getAnos(data => {
       this.setState({anos: data, loading: false});
     }, this.state.marcaAtual, event.target.value);
-
-    console.log("veiculo: " + event.target.value);
   }
 
   handleAnoChange = (event) => {
-    console.log("modelo: " + event.target.value);
-    this.setState({anoAtual: event.target.value, loading: true});
+    this.setState({anoAtual: event.target.value, modeloFinal: {}, loading: true});
+
+    FipeApi.getModelo(data => {
+      this.setState({modeloFinal: data, loading: false});
+    }, this.state.marcaAtual, this.state.veiculoAtual, event.target.value);
   }
 
   render() {
@@ -87,10 +86,7 @@ class App extends Component {
             value={this.state.anoAtual} 
           />
           <ModeloInfo 
-            resetLoading={this.resetLoading}  
-            marca={this.state.marcaAtual} 
-            veiculo={this.state.veiculoAtual} 
-            ano={this.state.anoAtual}
+            modelo={this.state.modeloFinal}
           />
         </form>
     );

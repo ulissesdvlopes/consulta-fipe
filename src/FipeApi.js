@@ -1,18 +1,22 @@
-export default class FipeApi {
-	static getMarcas(callback) {
-		fetch('http://fipeapi.appspot.com/api/1/carros/marcas.json')
-				.then((res)=> {
-					if(res.ok) {
-						 res.json().then((data) => {
-							 callback(data);
-						 });
-					}
-				});
-	}
+const baseUrl = 'http://fipeapi.appspot.com/api/1/carros';
 
-	static getModelos(callback, marca) {
+export default class FipeApi {
+
+	static getMarcas(callback) {
+		fetch(`${baseUrl}/marcas.json`)
+			.then(res => {
+				if(!res.ok) 
+					throw Error(res.statusText);
+				return res;
+			})
+			.then(res => res.json())
+			.then(data => callback(data, false))
+			.catch(error => callback([], true));
+}
+
+	static getVeiculos(callback, marca) {
 		let msg = '';
-		fetch(`http://fipeapi.appspot.com/api/1/carros/veiculos/${marca}.json`)
+		fetch(`${baseUrl}/veiculos/${marca}.json`)
 			.then((res)=> {
 				if(!res.ok) 
 					msg="Não foi possível estabelecer a conexão, tente novamente";
@@ -25,7 +29,7 @@ export default class FipeApi {
 
 	static getAnos(callback, marca, veiculo) {
 		let dados = [];
-		fetch(`http://fipeapi.appspot.com/api/1/carros/veiculo/${marca}/${veiculo}.json`)
+		fetch(`${baseUrl}/veiculo/${marca}/${veiculo}.json`)
 			.then((res)=> {
 				if(res.ok) {
 					res.json().then((data) => {
@@ -36,5 +40,17 @@ export default class FipeApi {
 					});
 				}
 			});
+	}
+
+	static getModelo(callback, marca, veiculo, ano) {
+		fetch(`${baseUrl}/veiculo/${marca}/${veiculo}/${ano}.json`)
+				.then((res)=> {
+					if(res.ok) {
+						res.json().then((data) => {
+							callback(data);
+							//this.setState({dados: data});
+						});
+					}
+				});
 	}
 }
