@@ -16,7 +16,7 @@ const state = {
     modelos: [],
     anos: [],
     modeloFinal: {}
-  }
+}
 
 const store = createStore(reducer, state);
 

@@ -15,16 +15,15 @@ export default class FipeApi {
 }
 
 	static getVeiculos(callback, marca) {
-		let msg = '';
 		fetch(`${baseUrl}/veiculos/${marca}.json`)
-			.then((res)=> {
+			.then(res => {
 				if(!res.ok) 
-					msg="Não foi possível estabelecer a conexão, tente novamente";
-				
-				res.json().then(data => {
-					callback(data, msg)
-				});
-			});
+					throw Error(res.statusText);
+				return res;
+			})
+			.then(res => res.json())
+			.then(data => callback(data, false))
+			.catch(error => callback([], true))
 	}
 
 	static getAnos(callback, marca, veiculo) {
@@ -48,7 +47,6 @@ export default class FipeApi {
 					if(res.ok) {
 						res.json().then((data) => {
 							callback(data);
-							//this.setState({dados: data});
 						});
 					}
 				});

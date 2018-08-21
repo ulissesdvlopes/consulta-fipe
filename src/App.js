@@ -5,115 +5,146 @@ import SelectAno from './components/SelectAno';
 import ModeloInfo from './components/ModeloInfo';
 import FipeApi from './FipeApi';
 import CustomSelect from './components/CustomSelect';
-import { listaMarcas } from './actions/actions';
+import { getMarcas, failAction } from './actions/actions';
+import { connect } from 'react-redux';
 
 class App extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = this.props.store.getState();
-  }
-
   componentDidMount() {
-
-    this.props.store.subscribe(() => {
-      this.setState(this.props.store.getState());
-    });
 		
 		FipeApi.getMarcas((data, err)=> {
       if(err)
-        this.props.store.dispatch({
-          type: 'FALHA',
-          payload: {msg: 'Não foi possível acessar a lista de marcas'}
-        });
+        this.props.fail();
 
-      const action = listaMarcas(data);
-      this.props.store.dispatch(action);
+      this.props.listaMarcas(data);
 		});
 
 	}
 
   handleMarcaChange = event => {
-    //this.setState({marcaAtual: event.target.value, veiculoAtual: -1, anoAtual: -1, modeloFinal: {}, loading: true});
+    this.props.selectMarca(event);
 
-    this.props.store.dispatch({
-      type: 'SELECT_MARCA',
-      payload: {marcaAtual: event.target.value, veiculoAtual: -1, anoAtual: -1, modeloFinal: {}, loading: true}
-    });
+    FipeApi.getVeiculos((data, err)=> {
+      if(err)
+        this.props.fail();
 
-    FipeApi.getVeiculos((data, msg)=> {
-      //this.setState({modelos: data, loading: false, msg: msg});
-      this.props.store.dispatch({
-        type: 'GET_VEICULOS',
-        payload: {modelos: data, loading: false, msg: msg}
-      });
+      this.props.listaVeiculos(data)
     }, event.target.value);
   }
 
   handleVeiculoChange = event => {
-    //this.setState({veiculoAtual: event.target.value, anoAtual: -1, modeloFinal: {}, loading: true});
-    this.props.store.dispatch({
-      type: 'SELECT_VEICULO',
-      payload: {veiculoAtual: event.target.value, anoAtual: -1, modeloFinal: {}, loading: true}
-    });
+    this.props.selectVeiculo(event);
 
     FipeApi.getAnos(data => {
-      //this.setState({anos: data, loading: false});
-      this.props.store.dispatch({
-        type: 'GET_ANOS',
-        payload: {anos: data, loading: false}
-      });
-    }, this.state.marcaAtual, event.target.value);
+      this.props.listaAnos(data);
+    }, this.props.marcaAtual, event.target.value);
   }
 
   handleAnoChange = event => {
-    //this.setState({anoAtual: event.target.value, modeloFinal: {}, loading: true});
-    this.props.store.dispatch({
-      type: 'SELECT_ANO',
-      payload: {anoAtual: event.target.value, modeloFinal: {}, loading: true}
-    });
+    this.props.selectAno(event);
 
     FipeApi.getModelo(data => {
-      //this.setState({modeloFinal: data, loading: false});
-      this.props.store.dispatch({
-        type: 'GET_MODELO',
-        payload: {modeloFinal: data, loading: false}
-      });
-    }, this.state.marcaAtual, this.state.veiculoAtual, event.target.value);
+      this.props.getModelo(data);
+    }, this.props.marcaAtual, this.props.veiculoAtual, event.target.value);
   }
 
   render() {
 
     let loading = null;
-    if(this.state.loading) {
+    if(this.props.loading) {
       loading = (<div className="loading" ><img id="loading-icon" alt="Loading..." src={loadingIcon}></img></div>)
     }
 
     return (
         <form className="forms" onChange={this.handleChange}>
-          {this.state.msg}
+          {this.props.msg}
           {loading}
-          <CustomSelect  
+          <CustomSelect
+            label = "Marca"
             handler={this.handleMarcaChange} 
-            value={this.state.marcaAtual}
-            lista={this.state.marcas}
+            value={this.props.marcaAtual}
+            lista={this.props.marcas}
           />
           <CustomSelect 
+            label = "Veículo"
             handler={this.handleVeiculoChange} 
-            lista={this.state.modelos} 
-            value={this.state.veiculoAtual} 
+            lista={this.props.modelos} 
+            value={this.props.veiculoAtual} 
           />
           <SelectAno 
             handler={this.handleAnoChange}
-            anos={this.state.anos} 
-            value={this.state.anoAtual} 
+            anos={this.props.anos} 
+            value={this.props.anoAtual} 
           />
           <ModeloInfo 
-            modelo={this.state.modeloFinal}
+            modelo={this.props.modeloFinal}
           />
         </form>
     );
   }
 }
 
-export default App;
+const mapStateToProps = state => {
+  return {
+    marcaAtual: state.marcaAtual, 
+    veiculoAtual: state.veiculoAtual, 
+    anoAtual: state.anoAtual, 
+    loading: state.loading,
+    msg: state.msg,
+    marcas: state.marcas,
+    modelos: state.modelos,
+    anos: state.anos,
+    modeloFinal: state.modeloFinal
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    fail: () => 
+      dispatch(failAction('Não foi possível acessar o servidor')),
+
+    listaMarcas: data =>
+      dispatch(getMarcas(data)),
+
+    selectMarca: event =>
+      dispatch({
+        type: 'SELECT_MARCA',
+        marcaAtual: event.target.value
+      }),
+
+    listaVeiculos: data =>
+      dispatch({
+        type: 'GET_VEICULOS',
+        modelos: data
+      }),
+
+    selectVeiculo: event =>
+      dispatch({
+        type: 'SELECT_VEICULO',
+        veiculo: event.target.value
+      }),
+
+    listaAnos: data =>
+      dispatch({
+        type: 'GET_ANOS',
+        anos: data
+      }),
+
+    selectAno: event =>
+      dispatch({
+        type: 'SELECT_ANO',
+        ano: event.target.value
+      }),
+
+    getModelo: data =>
+      dispatch({
+        type: 'GET_MODELO',
+        modelo: data
+      })
+  }
+}
+
+
+const containerApp = connect(mapStateToProps, mapDispatchToProps)(App);
+
+export default containerApp;
